@@ -24,25 +24,18 @@ module.exports.getUsers = (req, res, next) => {
 };
 
 module.exports.getUser = (req, res, next) => {
-  const { userId } = req.params;
+  const userId = req.user._id;
   User.findById(userId)
-    .orFail(new NotFoundError('Пользователь не найден'))
+    .orFail(() => {
+      throw new NotFoundError('Переданы неверные данные');
+    })
     .then((user) => res.send(user))
-    .catch(next);
-};
-
-module.exports.getUserId = (req, res, next) => {
-  User.findById(req.user._id)
-    .orFail(new NotFoundError('Пользователь не найден'))
-    .then((user) => res.status(200).send(user))
     .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
   const {
     name,
-    about,
-    avatar,
     email,
     password,
   } = req.body;
@@ -51,20 +44,15 @@ module.exports.createUser = (req, res, next) => {
     .then((hash) => {
       User.create({
         name,
-        about,
-        avatar,
         email,
         password: hash,
       })
-        .then(() => res.status(201)
+        .then((user) => res.status(201)
           .send(
             {
-              data: {
-                name,
-                about,
-                avatar,
-                email,
-              },
+              name: user.name,
+              email: user.email,
+              _id: user._id,
             },
           ))
         .catch((err) => {
@@ -77,33 +65,19 @@ module.exports.createUser = (req, res, next) => {
 };
 
 module.exports.updateUser = (req, res, next) => {
-  const { name, about } = req.body;
+  const { name, email } = req.body;
   User.findByIdAndUpdate(req.user._id, {
     name,
-    about,
+    email,
   }, { new: true, runValidators: true })
     .orFail(() => {
       throw new NotFoundError('Пользователь не найден');
     })
     .then((user) => res.send({ data: user }))
-    .catch(next);
-};
-
-module.exports.updateAvatar = (req, res, next) => {
-  const { avatar } = req.body;
-
-  User.findByIdAndUpdate(
-    req.user._id,
-    {
-      avatar,
-    },
-    {
-      new: true, runValidators: true,
-    },
-  )
-    .orFail(() => {
-      throw new NotFoundError('Аватар пользователя не найден');
-    })
-    .then((user) => res.send({ data: user }))
-    .catch(next);
+    .catch((err) => {
+      if (err.code === 11000) {
+        return next(new ConflictError('Такой пользователь уже существует'));
+      }
+      return next(err);
+    });
 };

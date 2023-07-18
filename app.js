@@ -9,19 +9,21 @@ const { errors } = require('celebrate');
 
 const { createUser, login } = require('./controllers/users');
 const auth = require('./middlewares/auth');
-const { validationCreateUser, validationLogin } = require('./middlewares/validation');
+const limiter = require('./middlewares/rateLimit');
+const { validationSignup, validationSignin } = require('./middlewares/validation');
 const handleError = require('./middlewares/handleError');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const NotFoundError = require('./errors/NotFoundError');
 
-mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
+mongoose.connect('mongodb://127.0.0.1:27017/bitfilmsdb');
 
 const app = express();
 
 app.use(express.json());
 
 app.use(cors());
+app.use(limiter);
 app.use(helmet());
 
 app.use(requestLogger);
@@ -29,19 +31,13 @@ app.use(requestLogger);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/crash-test', () => {
-  setTimeout(() => {
-    throw new Error('Сервер сейчас упадёт');
-  }, 0);
-});
-
-app.post('/signup', validationCreateUser, createUser);
-app.post('/signin', validationLogin, login);
+app.post('/signup', validationSignup, createUser);
+app.post('/signin', validationSignin, login);
 
 app.use(auth);
 
-app.use('/users', require('./routes/users'));
-app.use('/cards', require('./routes/cards'));
+app.use('/', require('./routes/users'));
+app.use('/', require('./routes/movies'));
 
 app.use('/', router.all('*', (req, res, next) => {
   next(new NotFoundError('404 Ошибка! Данные не найдены!'));

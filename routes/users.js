@@ -1,25 +1,19 @@
 const usersRouter = require('express').Router();
 
 const {
-  getUsers,
-  getUserId,
   getUser,
   updateUser,
-  updateAvatar,
 } = require('../controllers/users');
 
 const {
-  validationUserId,
+  validationUser,
   validationUpdateUser,
-  validationUpdateAvatar,
 } = require('../middlewares/validation');
 
-usersRouter.get('/', getUsers);
-usersRouter.get('/me', getUserId);
+// возвращает информацию о пользователе (email и имя)
+usersRouter.get('/users/me', validationUser, getUser);
 
-usersRouter.get('/:userId', validationUserId, getUser);
-
-usersRouter.patch('/me', validationUpdateUser, updateUser);
-usersRouter.patch('/me/avatar', validationUpdateAvatar, updateAvatar);
+// обновляет информацию о пользователе (email и имя)
+usersRouter.patch('/users/me', validationUpdateUser, updateUser);
 
 module.exports = usersRouter;
