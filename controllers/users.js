@@ -17,15 +17,11 @@ module.exports.login = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.getUsers = (req, res, next) => {
-  User.find({})
-    .then((user) => res.status(200).send(user))
-    .catch(next);
-};
-
 module.exports.getUser = (req, res, next) => {
   const userId = req.user._id;
-  User.findById(userId)
+  User
+    .findById(userId)
+
     .orFail(() => {
       throw new NotFoundError('Переданы неверные данные');
     })

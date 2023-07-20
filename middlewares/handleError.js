@@ -13,7 +13,7 @@ module.exports = (err, req, res, next) => {
   }
   if (err instanceof mongoose.Error.CastError) {
     return res.status(ERROR_BAD_REQUEST).send({
-      message: 'Переданы неверный ID',
+      message: 'Передан неверный ID',
     });
   }
 

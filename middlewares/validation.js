@@ -21,14 +21,14 @@ module.exports.validationCreateMovie = celebrate({
 module.exports.validationDeleteMovie = celebrate({
   params: Joi.object()
     .keys({
-      movieId: Joi.string().required().hex().length(24),
+      movieId: Joi.string().required(),
     }),
 });
 
 module.exports.validationSignin = celebrate({
   body: Joi.object()
     .keys({
-      email: Joi.string().required().email({ tlds: { allow: false } }),
+      email: Joi.string().required().email(),
       password: Joi.string().required().min(8),
     }),
 });
@@ -37,8 +37,8 @@ module.exports.validationSignup = celebrate({
   body: Joi.object()
     .keys({
       name: Joi.string().min(2).max(30),
-      email: Joi.string().required().email({ tlds: { allow: false } }),
-      password: Joi.string().required(),
+      email: Joi.string().required().email(),
+      password: Joi.string().required().min(8),
     }),
 });
 
@@ -46,7 +46,6 @@ module.exports.validationUser = celebrate({
   params: Joi.object()
     .keys({
       userId: Joi.string()
-        .required()
         .hex()
         .length(24),
     }),
